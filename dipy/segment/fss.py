@@ -11,7 +11,7 @@ from dipy.io.stateful_tractogram import StatefulTractogram
 
 class FastStreamlineSearch:
     def __init__(self, ref_streamlines, max_radius, nb_mpts=4, bin_size=20.0,
-                 resampling=24, bidirectional=True):
+                 resampling=24, bidirectional=True, memory_friendly=False):
         """ Fast Streamline Search (FFS)
 
         Generate the Binned K-D Tree structure with reference streamlines,
@@ -35,6 +35,8 @@ class FastStreamlineSearch:
             Number of points used to reshape each streamline.
         bidirectional : bool, optional
             Compute the smallest distance with and without flip.
+        memory_friendly : bool, optional
+            If True, structures are generated to occupy less space.
 
         Notes
         -----
@@ -65,6 +67,7 @@ class FastStreamlineSearch:
         self.bidirectional = bidirectional
         self.resampling = resampling
         self.max_radius = max_radius
+        self.memory_friendly = memory_friendly
 
         # Resample streamlines
         self.ref_slines = self._resample(ref_streamlines)
@@ -212,7 +215,8 @@ class FastStreamlineSearch:
 
     def _resample(self, streamlines):
         """Resample streamlines"""
-        s = np.zeros([len(streamlines), self.resampling, 3], dtype=np.float32)
+        dtype = np.float16 if self.memory_friendly else np.float32
+        s = np.zeros([len(streamlines), self.resampling, 3], dtype=dtype)
         for i, sline in enumerate(streamlines):
             if len(sline) < 2:
                 s[i] = sline
@@ -247,7 +251,7 @@ class FastStreamlineSearch:
 
 def nearest_from_matrix_row(coo_matrix):
     """
-    Return the nearest (smallest) for each row given an coup sparse matrix
+    Return the nearest (smallest) for each row given an coo sparse matrix
 
     Parameters
     ----------
@@ -274,7 +278,7 @@ def nearest_from_matrix_row(coo_matrix):
 
 def nearest_from_matrix_col(coo_matrix):
     """
-    Return the nearest (smallest) for each column given an coup sparse matrix
+    Return the nearest (smallest) for each column given an coo sparse matrix
 
     Parameters
     ----------
