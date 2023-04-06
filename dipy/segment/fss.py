@@ -74,9 +74,11 @@ class FastStreamlineSearch:
         self.ref_nb_slines = len(self.ref_slines)
 
         if self.bidirectional:
-            self.ref_slines = np.concatenate(
-                [self.ref_slines, np.flip(self.ref_slines, axis=1)])
-
+            dtype = np.float16 if self.memory_friendly else np.float32
+            self.ref_slines = np.concatenate([self.ref_slines,
+                                              np.flip(self.ref_slines, axis=1)],
+                                              dtype=dtype)
+        print(self.ref_slines.dtype)
         # Compute streamlines barycenter
         barycenters = self._slines_barycenters(self.ref_slines)
 
